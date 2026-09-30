@@ -8,7 +8,19 @@ Search the catalog, check CAD prices and in-store quantities, and rank observed 
 
 No LCBO account or API key required. **Unofficial, read-only, and not affiliated with LCBO.** Stock is a snapshot, not a reservation.
 
-[Usage](#usage) · [Locations & privacy](#locations-and-privacy) · [Python](#python-library) · [HTTP API](#http-api) · [Full reference](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/reference.md)
+## Contents
+
+- [Quick start](#quick-start)
+- [Install](#install)
+- [Usage](#usage)
+- [Locations and privacy](#locations-and-privacy)
+- [AI agents and skill installation](#ai-agents)
+- [Python library](#python-library)
+- [HTTP API](#http-api)
+- [How it works—and what it cannot promise](#how-it-worksand-what-it-cannot-promise)
+- [Contributing](#contributing)
+- [Documentation](#documentation)
+- [License](#license)
 
 ## Quick start
 
@@ -129,6 +141,14 @@ For provider overrides and exact postal-code fallback behavior, see [the locatio
 ## AI agents
 
 Give your AI harness the portable [LCBO skill](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/skills/lcbo/SKILL.md) to search products, compare prices, and check observed stock using `uvx lcbo --json`.
+
+Install it with the [Skills CLI](https://github.com/vercel-labs/skills) using Node.js/npm:
+
+```sh
+npx skills add mariomeyer/lcbo-cli --skill lcbo
+```
+
+The installer targets detected harnesses; use `--agent NAME` to select one explicitly. Installation is project-local by default; add `--global` to make it available across projects. This installs the skill instructions, not uv or the LCBO Python package.
 
 It includes product/SKU resolution, proximity coverage rules, and location privacy guidance. No MCP server or API key is required; the harness needs shell and network access. See [loading and installation](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/agents.md).
 

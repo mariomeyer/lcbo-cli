@@ -8,7 +8,24 @@ without that UI metadata. No MCP server or API key is required.
 
 ## Load or install
 
-Clone this repository, then copy the entire `docs/skills/lcbo/` folder into your
+With Node.js/npm available, use the [Skills CLI](https://github.com/vercel-labs/skills):
+
+```sh
+npx skills add mariomeyer/lcbo-cli --skill lcbo
+```
+
+The installer targets detected harnesses; use `--agent NAME` to select one
+explicitly. The default is project-local; append `--global` to install across
+projects.
+To inspect available skills without installing:
+
+```sh
+npx skills add mariomeyer/lcbo-cli --skill lcbo --list
+```
+
+This installs the skill instructions, not uv or the LCBO Python package.
+
+Alternatively, clone this repository and copy the entire `docs/skills/lcbo/` folder into your
 harness's configured skill directory, keeping the folder name `lcbo`. Consult
 your harness's skill-loading instructions for the destination and reload steps;
 this repository does not automatically install or enable skills on your machine.
