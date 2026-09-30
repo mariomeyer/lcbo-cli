@@ -1,0 +1,48 @@
+# Development and maintenance
+
+## Setup and checks
+
+```sh
+uv sync --extra dev
+uv run pytest
+uv build
+```
+
+Python 3.11 or newer is supported. `uv.lock` pins the development environment. The installed `lcbo` entry point and library come from `src/lcbo_cli/`.
+
+Tests use controlled HTTP transports, observed public HTML fragments, and the sanitized search response in `evidence/lcbo-http.har`. The normal suite is offline and needs no LCBO, Photon, or credentials. Live checks are separate and should use a small number of requests.
+
+## Module map
+
+| Module | Responsibility |
+| --- | --- |
+| `live.py` | Models, LCBO adapters, geocoding, distance ranking, HTTP recording |
+| `capture.py` | HAR import, redaction, capture models, replay URL restrictions |
+| `client.py` | Offline responses and explicitly enabled GET replay |
+| `api.py` | Local FastAPI routes and error mapping |
+| `cli.py` | Argument parsing, dispatch, stdout/stderr behavior |
+| `output.py` | Rich tables, product headings, Open links, JSON output |
+
+Search uses public Coveo configuration embedded in LCBO's homepage. Its token is fetched for each search and must not be persisted. Prices and inventory come from server-rendered markup. Verify representative public responses before changing selectors or upstream queries.
+
+## Changing behavior
+
+Add focused regression tests for incorrect behavior. Postal-code tests must distinguish exact matches from fuzzy results, verify coordinate order, and prevent substitution of a different postal area. Proximity tests should verify distances and coverage. CLI tests should retain JSON compatibility and verify terminal hyperlink output independently of actual terminal click handling.
+
+Keep table output on stdout and errors on stderr. `--json` must contain only valid JSON. Preserve Decimal prices and numeric SKU validation. Purchasing or account operations are outside this project's scope.
+
+## Captures and credentials
+
+Generated captures belong under ignored `captures/`. Raw `*.har` files are ignored except the reviewed fixture under `evidence/`. Never commit environment files, browser cookies, authentication headers, embedded configuration tokens, or geocoding inputs. HTML bodies are omitted from recordings because they contain session/configuration keys. Redaction is best effort, not a guarantee that arbitrary HAR files contain no private data.
+
+Never copy a user's city, postal code, address, coordinates, or request history from a conversation into documentation or fixtures. Use public landmark examples and synthetic regression inputs. Permission to publish the code does not authorize publishing personal context.
+
+## Distribution
+
+The project runs directly from Git:
+
+```sh
+uvx --from git+https://github.com/mariomeyer/lcbo-cli lcbo --help
+```
+
+`uv build` creates a wheel and source distribution in `dist/`. A GitHub push does not publish to PyPI. If package-index distribution is added later, check the package name, version, license, and credentials before publishing.

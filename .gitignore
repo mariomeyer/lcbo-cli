@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.egg-info/
+captures/
+*.har
+!evidence/*.har
+.env
+.env.*
+!.env.example
+.DS_Store
+dist/
+build/
