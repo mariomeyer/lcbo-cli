@@ -34,14 +34,29 @@ jobs:
     name: Build and check distributions
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    outputs:
+      release_relevant: ${{ steps.changes.outputs.release_relevant }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
+          fetch-depth: 0
           persist-credentials: false
       - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff # v6
         with:
           version: "0.12.2"
           python-version: "3.12"
+      - name: Check whether the push changed more than documentation
+        id: changes
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          if [ "$EVENT_NAME" = "push" ]; then
+            uv run --no-project python scripts/release_changes.py \
+              --base "$BEFORE_SHA" --head "$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+          else
+            echo "release_relevant=true" >> "$GITHUB_OUTPUT"
+          fi
       - run: uv build
       - run: uvx --from twine==7.0.0 twine check --strict dist/*
       - name: Smoke test the installed wheel
@@ -59,6 +74,7 @@ jobs:
     if: >-
       github.ref == 'refs/heads/main' &&
       github.event_name != 'pull_request' &&
+      needs.build.outputs.release_relevant == 'true' &&
       vars.RELEASE_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
