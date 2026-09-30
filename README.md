@@ -6,7 +6,7 @@ Unofficial and not affiliated with LCBO. Stock quantities are snapshots, not res
 
 ## License
 
-The project code is licensed under the [MIT License](LICENSE). This does not grant rights to LCBO data, trademarks, or other third-party content, which remain subject to their respective terms.
+The project code is licensed under the [MIT License](https://github.com/mariomeyer/lcbo-cli/blob/main/LICENSE). This does not grant rights to LCBO data, trademarks, or other third-party content, which remain subject to their respective terms.
 
 ## Run with uvx
 
@@ -20,7 +20,15 @@ uvx --from git+https://github.com/mariomeyer/lcbo-cli lcbo nearby 33989 --locati
 uvx --from git+https://github.com/mariomeyer/lcbo-cli lcbo search guinness --json
 ```
 
-Python **3.11+** is required; uv can manage the interpreter. The package is distributed from GitHub, not PyPI, so use `--from` rather than bare `uvx lcbo-cli`.
+Python **3.11+** is required; uv can manage the interpreter. Until the first PyPI release, use the GitHub commands above. The PyPI distribution name is **`lcbo`**, the Python import is `lcbo_cli`, and the executable is `lcbo`.
+
+Once published to PyPI, the short command will be:
+
+```sh
+uvx lcbo search guinness --limit 5
+```
+
+CI tests Python 3.11–3.14 and validates wheel/source builds. Releases use Conventional Commits and Python Semantic Release; PyPI publishing uses a separate Trusted Publishing job. See the [release setup guide](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/releases.md) for the required one-time configuration.
 
 For a persistent command:
 
@@ -29,15 +37,15 @@ uv tool install git+https://github.com/mariomeyer/lcbo-cli
 lcbo search guinness
 ```
 
-See the [CLI, library, and API reference](docs/reference.md) and [development guide](CONTRIBUTING.md).
+See the [CLI, library, and API reference](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/reference.md) and [development guide](https://github.com/mariomeyer/lcbo-cli/blob/main/CONTRIBUTING.md).
 
 ## Console output
 
 Actual CLI output from public product examples, rendered as SVG images. Prices and availability are snapshots, not guarantees.
 
-![Product search console output](docs/images/search.svg)
+![Product search console output](https://raw.githubusercontent.com/mariomeyer/lcbo-cli/main/docs/images/search.svg)
 
-![Product details console output](docs/images/product.svg)
+![Product details console output](https://raw.githubusercontent.com/mariomeyer/lcbo-cli/main/docs/images/product.svg)
 
 Regenerate these images with `uv run python scripts/readme_screenshots.py`. This makes live public LCBO requests; no location lookup is used.
 
@@ -102,7 +110,7 @@ uv run pytest
 uv build
 ```
 
-Builds produce a wheel and source distribution under `dist/`. See [CONTRIBUTING.md](CONTRIBUTING.md) for architecture and maintenance notes. Website markup and third-party services can change; the API is intended for local use and has no authentication. Purchasing, checkout, account actions, and anti-bot bypass are outside the project's scope.
+Builds produce a wheel and source distribution under `dist/`. See [CONTRIBUTING.md](https://github.com/mariomeyer/lcbo-cli/blob/main/CONTRIBUTING.md) for architecture and maintenance notes. Website markup and third-party services can change; the API is intended for local use and has no authentication. Purchasing, checkout, account actions, and anti-bot bypass are outside the project's scope.
 
 Tests use the real sanitized search capture, observed product/inventory fragments, and mock HTTP for invalid URLs, mutation replay rejection, redirects, duplicate inventory rows, parsing failures and distance ranking. Live public search returned 20 Guinness results; Guinness 0 SKU 33989 was CAD 11.95. Live availability returned store quantities successfully. No purchasing, checkout, account actions, or anti-bot bypass is implemented.
 

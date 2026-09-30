@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "lcbo-cli"
+name = "lcbo"
 version = "0.1.0"
 description = "Typed LCBO product search, prices, inventory, proximity, and HAR capture"
 readme = "README.md"
@@ -27,3 +27,34 @@ packages = ["src/lcbo_cli"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+commit_parser = "conventional"
+commit_author = "Mario Meyer <mariomeyer@users.noreply.github.com>"
+commit_message = "chore(release): {version} [skip ci]"
+tag_format = "v{version}"
+allow_zero_version = true
+major_on_zero = false
+build_command = """
+uv lock --upgrade-package lcbo
+git add uv.lock
+uv build
+uvx --from twine==7.0.0 twine check --strict dist/*
+"""
+
+[tool.semantic_release.branches.main]
+match = "^main$"
+prerelease = false
+
+[tool.semantic_release.changelog.default_templates]
+changelog_file = "CHANGELOG.md"
+mask_initial_release = false
+
+[tool.semantic_release.remote]
+type = "github"
+token = { env = "GH_TOKEN" }
+
+[tool.semantic_release.publish]
+dist_glob_patterns = ["dist/*.whl", "dist/*.tar.gz"]
+upload_to_vcs_release = true

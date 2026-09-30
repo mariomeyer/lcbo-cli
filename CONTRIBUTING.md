@@ -45,4 +45,8 @@ The project runs directly from Git:
 uvx --from git+https://github.com/mariomeyer/lcbo-cli lcbo --help
 ```
 
-`uv build` creates a wheel and source distribution in `dist/`. A GitHub push does not publish to PyPI. If package-index distribution is added later, check the package name, version, license, and credentials before publishing.
+`uv build` creates the `lcbo` wheel and source distribution in `dist/`. The repository remains `lcbo-cli`, the Python import remains `lcbo_cli`, and the executable remains `lcbo`.
+
+Use Conventional Commits: `fix:` for patch releases, `feat:` for minor releases, and `!` or a `BREAKING CHANGE:` footer for breaking changes. Docs, tests, CI, and maintenance commits do not release on their own. Before 1.0, breaking changes bump the minor version; after 1.0 they bump the major version. Do not manually change the package version or release tags.
+
+CI runs offline tests and distribution checks on pull requests and main pushes. After one-time configuration, qualifying main commits automatically create a version commit, changelog, tag and GitHub release, followed by a separate PyPI publishing job. Publishing is initially disabled with the `RELEASE_ENABLED` repository-variable gate. See [Release setup and recovery](docs/releases.md).
