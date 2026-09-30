@@ -126,6 +126,12 @@ Nearby ranking fetches one store-detail page per observed inventory store, with 
 
 For provider overrides and exact postal-code fallback behavior, see [the location reference](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/reference.md#nearby-locations).
 
+## AI agents
+
+Give your AI harness the portable [LCBO skill](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/skills/lcbo/SKILL.md) to search products, compare prices, and check observed stock using `uvx lcbo --json`.
+
+It includes product/SKU resolution, proximity coverage rules, and location privacy guidance. No MCP server or API key is required; the harness needs shell and network access. See [loading and installation](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/agents.md).
+
 ## Python library
 
 Add the package to your project:
@@ -208,6 +214,7 @@ Tests run offline. CI tests Python 3.11–3.14, validates the distributions, and
 | Guide | What you'll find |
 | --- | --- |
 | [Reference](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/reference.md) | Every command, model, environment variable, and HTTP route |
+| [AI agents](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/agents.md) | Portable skill, loading instructions, and privacy boundaries |
 | [Development](https://github.com/mariomeyer/lcbo-cli/blob/main/CONTRIBUTING.md) | Setup, architecture, testing, and privacy rules |
 | [Captures](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/captures.md) | HAR recording, provenance, and offline replay |
 | [Releases](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/releases.md) | Version conventions, publishing, and recovery |

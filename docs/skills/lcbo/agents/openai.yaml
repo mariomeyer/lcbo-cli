@@ -1,0 +1,4 @@
+interface:
+  display_name: "LCBO"
+  short_description: "Find LCBO products, prices, and nearby stock"
+  default_prompt: "Use $lcbo to find an LCBO product, check its price, and report observed store availability with coverage and privacy caveats."
