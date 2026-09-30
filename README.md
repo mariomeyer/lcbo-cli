@@ -57,14 +57,39 @@ uvx lcbo availability 33989
 
 `33989` is the product's SKU, shown in search results. Inventory tables show the product name in the heading, store addresses, observed quantities, and product links.
 
+![Actual store availability output with the product name, stock, and Open links; excerpt](https://raw.githubusercontent.com/mariomeyer/lcbo-cli/main/docs/images/availability.svg)
+
+*Output excerpt for readability. The command returns every observed inventory row; screenshot quantities are snapshots.*
+
+### Browse the store directory
+
+```sh
+uvx lcbo stores
+```
+
+![Initial LCBO store directory page with addresses and phone numbers](https://raw.githubusercontent.com/mariomeyer/lcbo-cli/main/docs/images/stores.svg)
+
+### Discover featured products
+
+```sh
+uvx lcbo discover whisky
+```
+
+![Homepage featured products matching whisky, with clickable Open labels](https://raw.githubusercontent.com/mariomeyer/lcbo-cli/main/docs/images/discover.svg)
+
+`discover` filters homepage features, not the full catalog. Use `search` for catalog results.
+
 ### Get JSON for scripts
 
 ```sh
 uvx lcbo search guinness --limit 5 --json
 uvx lcbo availability 33989 --json
+uvx lcbo product guinness-0-33989 --json
 ```
 
 Tables are the default; `--json` works before or after the subcommand. JSON contains full product URLs. Human-readable tables use clickable **Open** labels in terminals that support OSC 8 hyperlinks.
+
+![Product details as JSON instead of a console table](https://raw.githubusercontent.com/mariomeyer/lcbo-cli/main/docs/images/json.svg)
 
 For command options, run `uvx lcbo --help` or `uvx lcbo nearby --help`. The [full reference](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/reference.md) also covers store listings, homepage discovery, and HAR capture/replay.
 
@@ -94,6 +119,10 @@ uvx lcbo nearby 33989 --latitude 43.6426 --longitude -79.3871
 ```
 
 Nearby ranking fetches one store-detail page per observed inventory store, with four requests at a time. Large inventories can take a while. `--candidates 20` caps the rows inspected **in source order before sorting**; it is not a nearest-20 filter and reduces coverage. Every result reports coverage.
+
+![Inventory ranked by distance from public CN Tower coordinates, with a five-candidate coverage limit](https://raw.githubusercontent.com/mariomeyer/lcbo-cli/main/docs/images/nearby.svg)
+
+*This example uses CN Tower coordinates and `--candidates 5` to keep requests modest. It ranks only the first five source-order candidates—not the five nearest stores.*
 
 For provider overrides and exact postal-code fallback behavior, see [the location reference](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/reference.md#nearby-locations).
 

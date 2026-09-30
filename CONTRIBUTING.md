@@ -63,4 +63,4 @@ CI runs offline tests and distribution checks on pull requests and main pushes. 
 uv run python scripts/readme_screenshots.py
 ```
 
-This regenerates the SVG images in `docs/images/` from actual CLI output using public product examples. It makes live LCBO requests but does not geocode a location. Review generated assets for private data before sharing. Screenshot prices are snapshots, not live quotes.
+This regenerates the SVG images in `docs/images/` from actual CLI output: search, product details, availability, nearby ranking, stores, discovery, and JSON. It makes live LCBO requests but does not geocode a location; nearby uses public CN Tower coordinates and five source-order candidates. Long availability output is explicitly labelled as an excerpt. Review generated assets for private data before sharing. Screenshot prices and quantities are snapshots, not live quotes.
