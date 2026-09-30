@@ -4,6 +4,10 @@ Installable Python library, Pydantic models, FastAPI facade, and CLI for **read-
 
 Unofficial and not affiliated with LCBO. Stock quantities are snapshots, not reservations.
 
+## License
+
+The project code is licensed under the [MIT License](LICENSE). This does not grant rights to LCBO data, trademarks, or other third-party content, which remain subject to their respective terms.
+
 ## Run with uvx
 
 With [uv installed](https://docs.astral.sh/uv/getting-started/installation/), run directly from GitHub without cloning or setting up an environment:
