@@ -8,6 +8,10 @@ Search the catalog, check CAD prices and in-store quantities, and rank observed 
 
 No LCBO account or API key required. **Unofficial, read-only, and not affiliated with LCBO.** Stock is a snapshot, not a reservation.
 
+![lcbo CLI demo: catalog search followed by nearby store stock ranked by distance](https://raw.githubusercontent.com/mariomeyer/lcbo-cli/main/docs/images/demo.gif)
+
+*Actual CLI output. Prices, quantities, and distances are examples from one capture, not current quotes.*
+
 ## Contents
 
 - [Quick start](#quick-start)
