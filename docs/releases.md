@@ -2,20 +2,24 @@
 
 The distribution is **lcbo**. The repository is **mariomeyer/lcbo-cli**, the import is `lcbo_cli`, and the console command is `lcbo`.
 
+The package is [published on PyPI](https://pypi.org/project/lcbo/), and this repository's automatic releases are enabled. The setup instructions below are for maintainers configuring or restoring the publisher, not prerequisites for using the CLI.
+
 ## Workflow
 
 `.github/workflows/release.yml` runs on pull requests, main pushes, and manual dispatch:
 
 1. Offline tests run on Python 3.11, 3.12, 3.13, and 3.14.
 2. The build job creates wheel/source distributions, runs strict Twine checks, smoke-tests the wheel's `lcbo --help`, and uploads build artifacts.
-3. With repository variable `RELEASE_ENABLED=true`, successful main runs use pinned Python Semantic Release to calculate the next version from commits, update `pyproject.toml` and `uv.lock`, generate `CHANGELOG.md`, and create a tag and GitHub release with distribution assets.
+3. With repository variable `RELEASE_ENABLED=true`, eligible successful main runs use pinned Python Semantic Release to calculate the next version from commits, update `pyproject.toml` and `uv.lock`, generate `CHANGELOG.md`, and create a tag and GitHub release with distribution assets. Documentation-only pushes skip this job entirely, regardless of commit message.
 4. Only when a new version was released, a separate `pypi` job downloads those exact release artifacts and publishes using OIDC Trusted Publishing. It has no checkout/build step and no long-lived PyPI token.
 
 PR jobs have read-only permissions and no persistent checkout credentials. Only the release job has `contents: write`; only the publisher has `id-token: write`. Actions are pinned to commit SHAs. The release job serializes main releases and refuses to release a commit if main moved after its tests started. Release commits use `chore(release): VERSION [skip ci]`, preventing loops.
 
+The path guard compares the complete push range, not just the last commit. It treats `docs/`, Markdown/reStructuredText/AsciiDoc files, and `scripts/readme_screenshots.py` as documentation. Source deletions and mixed source/docs pushes remain eligible. Unknown or invalid Git ranges fail the build rather than authorizing publication. Manual dispatch is an explicit release request and bypasses the docs-only push check; Conventional Commits still determine whether a new version exists.
+
 ## One-time setup
 
-Publishing is intentionally disabled until these steps are complete. No PyPI project or Trusted Publisher is created by adding this workflow.
+For a new deployment, leave `RELEASE_ENABLED` unset or `false` until these steps are complete. This repository has already completed setup. No PyPI project or Trusted Publisher is created merely by adding the workflow.
 
 1. Sign into your own [PyPI account](https://pypi.org/) with two-factor authentication. If `lcbo` does not exist, add a [pending publisher](https://docs.pypi.org/trusted-publishers/creating-a-project-through-oidc/). If you already own it, add a publisher to the existing project. A missing public package page does not guarantee the name can be registered; verify this in PyPI before enabling releases.
 2. Use these exact publisher settings:
@@ -37,9 +41,9 @@ gh variable set RELEASE_ENABLED --repo mariomeyer/lcbo-cli --body true
 gh workflow run release.yml --repo mariomeyer/lcbo-cli --ref main
 ```
 
-There are no version tags at initial setup. Semantic Release starts its calculation at 0.0.0; the release-automation feature commit makes the first planned release 0.1.0. It will not tag the old non-Conventional-Commit history as a separate release.
+The first published version was 0.1.0. Subsequent calculations start from the latest matching `v{version}` tag. In a fresh repository without tags, Semantic Release starts at 0.0.0; a feature commit produces 0.1.0 with this configuration.
 
-After the first successful publication:
+Use the published package:
 
 ```sh
 uvx lcbo search guinness --limit 5

@@ -1,117 +1,188 @@
-# lcbo-cli
+# lcbo
 
-Installable Python library, Pydantic models, FastAPI facade, and CLI for **read-only LCBO product search, prices, and store inventory**.
+**LCBO products, prices, and nearby stock—without leaving your terminal.**
 
-Unofficial and not affiliated with LCBO. Stock quantities are snapshots, not reservations.
+[![PyPI version](https://img.shields.io/pypi/v/lcbo)](https://pypi.org/project/lcbo/) [![CI](https://github.com/mariomeyer/lcbo-cli/actions/workflows/release.yml/badge.svg)](https://github.com/mariomeyer/lcbo-cli/actions/workflows/release.yml) [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)](https://pypi.org/project/lcbo/) [![MIT license](https://img.shields.io/github/license/mariomeyer/lcbo-cli)](https://github.com/mariomeyer/lcbo-cli/blob/main/LICENSE)
 
-## License
+Search the catalog, check CAD prices and in-store quantities, and rank observed inventory stores by distance. Use it as a CLI, a typed Python library, or a local HTTP API.
 
-The project code is licensed under the [MIT License](https://github.com/mariomeyer/lcbo-cli/blob/main/LICENSE). This does not grant rights to LCBO data, trademarks, or other third-party content, which remain subject to their respective terms.
+No LCBO account or API key required. **Unofficial, read-only, and not affiliated with LCBO.** Stock is a snapshot, not a reservation.
 
-## Run with uvx
+[Usage](#usage) · [Locations & privacy](#locations-and-privacy) · [Python](#python-library) · [HTTP API](#http-api) · [Full reference](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/reference.md)
 
-With [uv installed](https://docs.astral.sh/uv/getting-started/installation/), run directly from GitHub without cloning or setting up an environment:
+## Quick start
 
-```sh
-uvx --from git+https://github.com/mariomeyer/lcbo-cli lcbo search guinness --limit 5
-uvx --from git+https://github.com/mariomeyer/lcbo-cli lcbo availability 33989
-uvx --from git+https://github.com/mariomeyer/lcbo-cli lcbo nearby 33989 --location "Toronto, ON"
-uvx --from git+https://github.com/mariomeyer/lcbo-cli lcbo nearby 33989 --location "M5V 3L9"
-uvx --from git+https://github.com/mariomeyer/lcbo-cli lcbo search guinness --json
-```
-
-Python **3.11+** is required; uv can manage the interpreter. Until the first PyPI release, use the GitHub commands above. The PyPI distribution name is **`lcbo`**, the Python import is `lcbo_cli`, and the executable is `lcbo`.
-
-Once published to PyPI, the short command will be:
+With [uv installed](https://docs.astral.sh/uv/getting-started/installation/):
 
 ```sh
 uvx lcbo search guinness --limit 5
 ```
 
-CI tests Python 3.11–3.14 and validates wheel/source builds. Releases use Conventional Commits and Python Semantic Release; PyPI publishing uses a separate Trusted Publishing job. See the [release setup guide](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/releases.md) for the required one-time configuration.
+That's it—no clone, configuration file, or virtual environment to set up. Python **3.11+** is required; uv can manage the interpreter.
 
-For a persistent command:
+![LCBO catalog search showing product names, CAD prices, and Open links](https://raw.githubusercontent.com/mariomeyer/lcbo-cli/main/docs/images/search.svg)
 
-```sh
-uv tool install git+https://github.com/mariomeyer/lcbo-cli
-lcbo search guinness
-```
+*Actual CLI output, rendered as an SVG. Screenshot prices are examples, not current quotes.*
 
-See the [CLI, library, and API reference](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/reference.md) and [development guide](https://github.com/mariomeyer/lcbo-cli/blob/main/CONTRIBUTING.md).
+## Install
 
-## Console output
-
-Actual CLI output from public product examples, rendered as SVG images. Prices and availability are snapshots, not guarantees.
-
-![Product search console output](https://raw.githubusercontent.com/mariomeyer/lcbo-cli/main/docs/images/search.svg)
-
-![Product details console output](https://raw.githubusercontent.com/mariomeyer/lcbo-cli/main/docs/images/product.svg)
-
-Regenerate these images with `uv run python scripts/readme_screenshots.py`. This makes live public LCBO requests; no location lookup is used.
-
-## Run from a checkout
+For a persistent `lcbo` command:
 
 ```sh
-uv sync --extra dev
-uv run lcbo search guinness --limit 3
-uv run lcbo product guinness-0-33989
-uv run lcbo availability 33989
-uv run lcbo nearby 33989 --latitude 43.65 --longitude -79.38
-uv run lcbo nearby 33989 --location "M5V 3L9"
-uv run lcbo nearby 33989 --location "Kitchener, Ontario"
-uv run lcbo serve
+uv tool install lcbo
+lcbo --help
 ```
 
-The local server listens on `127.0.0.1:8000`; interactive API documentation is at `/docs`. Routes: `/search?q=guinness`, `/products/{slug}`, `/availability/{sku}`, `/nearby/{sku}?latitude=...&longitude=...`, `/stores`, and `/discover`.
+Upgrade with `uv tool upgrade lcbo`. Prefer pip? Run `pip install lcbo` in your virtual environment.
 
-CLI results use console tables by default, with CAD prices and distances formatted for reading. Add `--json` before or after the command for machine-readable output, for example `uv run lcbo search guinness --limit 3 --json`. JSON retains the existing response structure. FastAPI responses remain JSON.
+The PyPI package and executable are **`lcbo`**. The Python import is **`lcbo_cli`**; the GitHub repository is **`lcbo-cli`**.
 
-Product and store names use plain text. Search, discovery, product details, availability, and nearby tables have a final **Product link** column with a clickable **Open** label. These use OSC 8 hyperlinks in supporting terminals; the terminal controls click gestures and may underline only the Open label. Inventory tables use the product URL observed on the inventory page, not the store URL. Redirected output shows the label without escape sequences; JSON retains full URLs and its existing structure.
+## Usage
 
-`nearby` ranks all stores shown in the product inventory HTML using public coordinates from store detail pages and straight-line distance. It makes one detail request per store with four concurrent requests. `--candidates N` limits these requests and therefore coverage. Results explicitly report coverage. `/stores` currently returns only the first directory page, while product availability uses all observed inventory table rows. `discover` filters homepage features and is **not catalog search**. Prices are CAD decimals; quantities reflect the page snapshot, not reservations.
+### Read a product's price
 
-City/address/postal-code lookup works automatically with `--location` using **Photon**, without an API key, configuration, or extra consent flag. Locations are sent to `https://photon.komoot.io/api/`, filtered to Canada, and the first match is used. The result identifies the matched location and includes OpenStreetMap attribution. City/postal-code coordinates are approximate; distances are straight-line, not driving distances. The API equivalent is `location=Kitchener, Ontario`, and the library defaults to allowing geocoding. Geocoding inputs/responses are excluded from HAR recordings, and repeated lookups are cached for the lifetime of a client. Photon permits modest use but does not guarantee availability; see its [service guidance](https://github.com/komoot/photon#demo-server) and [API documentation](https://github.com/komoot/photon/blob/master/docs/api-v1.md). For an alternative provider, `LCBO_GEOCODER_URL` still overrides the default with a chosen HTTPS Nominatim-compatible endpoint. The legacy `--allow-geocoding` flag remains accepted but is unnecessary.
+```sh
+uvx lcbo product guinness-0-33989
+```
 
-Postal-code queries require an exact normalized match; fuzzy matches to different codes are rejected. If Photon lacks the complete code, the tool estimates the location from postcode points sharing the requested first three characters, labels it as a **postal-area estimate**, and states that the exact code was not found. This is an average of returned points, not an official postal-area centroid. If no matching area is available, lookup fails with a suggestion to use city/province. Custom geocoders must return the exact postcode and do not use this fallback. Documentation examples use public locations; test fixtures are synthetic and do not record users' locations or requests.
+`product` takes the final slug from an LCBO product URL—not a bare SKU or a full URL.
+
+![Product details with the product name in the heading, CAD price, and an Open link](https://raw.githubusercontent.com/mariomeyer/lcbo-cli/main/docs/images/product.svg)
+
+### Check store stock
+
+```sh
+uvx lcbo availability 33989
+```
+
+`33989` is the product's SKU, shown in search results. Inventory tables show the product name in the heading, store addresses, observed quantities, and product links.
+
+### Get JSON for scripts
+
+```sh
+uvx lcbo search guinness --limit 5 --json
+uvx lcbo availability 33989 --json
+```
+
+Tables are the default; `--json` works before or after the subcommand. JSON contains full product URLs. Human-readable tables use clickable **Open** labels in terminals that support OSC 8 hyperlinks.
+
+For command options, run `uvx lcbo --help` or `uvx lcbo nearby --help`. The [full reference](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/reference.md) also covers store listings, homepage discovery, and HAR capture/replay.
+
+## Locations and privacy
+
+Find observed stock near a city, postal code, or address:
+
+```sh
+uvx lcbo nearby 33989 --location "Toronto, ON"
+uvx lcbo nearby 33989 --location "M5V 3L9"
+uvx lcbo nearby 33989 --location "CN Tower, Toronto, ON"
+```
+
+These are public Toronto-area examples, not user locations.
+
+- Results are sorted by **straight-line distance**, not driving time.
+- The output identifies the matched location. Check it, especially for ambiguous city names.
+- Complete postal codes require an exact match. If unavailable, Photon may return a clearly labelled **postal-area estimate** using only matching postal-prefix points; that estimate is not an official centroid.
+- No matching postal area? Use a city and province, or explicit coordinates.
+
+**Location lookup sends your query to [Photon](https://github.com/komoot/photon#demo-server), a third-party OpenStreetMap geocoder.** Geocoding requests are excluded from HAR recordings, but the command's output can contain the matched location. Treat shared output accordingly. Photon is a public service without an availability guarantee; keep use modest.
+
+To avoid geocoding entirely, provide coordinates instead:
+
+```sh
+uvx lcbo nearby 33989 --latitude 43.6426 --longitude -79.3871
+```
+
+Nearby ranking fetches one store-detail page per observed inventory store, with four requests at a time. Large inventories can take a while. `--candidates 20` caps the rows inspected **in source order before sorting**; it is not a nearest-20 filter and reduces coverage. Every result reports coverage.
+
+For provider overrides and exact postal-code fallback behavior, see [the location reference](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/reference.md#nearby-locations).
+
+## Python library
+
+Add the package to your project:
+
+```sh
+uv add lcbo
+```
+
+The synchronous client returns Pydantic models, including Decimal prices:
 
 ```python
 from lcbo_cli import LCBOClient
+
 client = LCBOClient()
-results = client.search("guinness", limit=3)
+results = client.search("guinness", limit=5)
+
+for product in results.products:
+    print(product.sku, product.name, product.price, product.currency)
+
 product = client.product("guinness-0-33989")
-stock = client.availability(product.sku)
+inventory = client.availability(product.sku)
+
+# Serialize typed results for another application.
+print(results.model_dump_json())
 ```
 
-## Capture and provenance
+Models, location methods, and offline capture APIs are documented in the [library reference](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/reference.md#python-library). Install the package into your application's environment to import it; a `uv tool install` environment is isolated from your project.
 
-The adapter was derived from public LCBO HTML and its linked Coveo SDK, inspected starting **2026-09-29**. Search uses the public query POST shown in LCBO's homepage code. Public search configuration is fetched per call and is not persisted. Product prices and inventory are parsed from actual server-rendered pages. The included evidence is HTTP-client traffic, not a browser HAR or an official LCBO REST API specification.
+## HTTP API
 
-`evidence/lcbo-http.har` is a real **HTTP-client HAR 1.2 capture**, not browser traffic. Its seven records cover the homepage, Coveo search, product details, inventory, and two store-detail requests. HTML bodies are omitted because they embed session/configuration keys. Request headers, cookies and bodies are omitted. The JSON payload retains public product data. Generic field redaction is not a guarantee that arbitrary imported HAR files are free of personal data; review imports before sharing.
+Start the local FastAPI server:
 
 ```sh
-uv run lcbo --har captures/search.har search guinness
-uv run lcbo import-har evidence/lcbo-http.har -o captures/search.json
-uv run lcbo endpoints captures/search.json
-uv run lcbo get captures/search.json e1
-uv run lcbo serve captures/search.json
+uvx lcbo serve
 ```
 
-The importer accepts public LCBO GET JSON and the observed Coveo search POST JSON, including base64 responses. POSTs are offline-only; no authentication, cookies, or POST request body is retained. Live capture replay is limited to observed read-only page route families and explicitly enabled with `get --live`; HTML endpoints normally use the typed client. Other methods, third-party origins and non-JSON responses are skipped. **HAR** is an HTTP archive; **HAL** is a hypermedia JSON format and is not interchangeable.
+It listens on **127.0.0.1:8000**. Open `http://127.0.0.1:8000/docs` for interactive API docs or `/openapi.json` for the schema.
 
-`--har` must precede the command. Each CLI invocation starts a new recording and replaces its destination file. The recorder creates parent directories; the importer requires the output directory to exist. `endpoints`, `get`, and the capture argument to `serve` expect imported JSON, not a raw HAR.
-
-For a true browser HAR, use Chrome DevTools → Network → Preserve log, browse/search/check inventory, and Export HAR (sanitized). Importing browser capture is supported independently of Computer Use runtime availability.
-
-## Verification
+In another terminal:
 
 ```sh
-uv sync --extra dev
+curl 'http://127.0.0.1:8000/search?q=guinness&limit=5'
+curl 'http://127.0.0.1:8000/availability/33989'
+```
+
+Search, products, inventory, and nearby ranking return JSON. The [API reference](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/reference.md#http-api) lists routes and error responses.
+
+**The API has no authentication and is intended for local use.** Do not expose it publicly as-is.
+
+## How it works—and what it cannot promise
+
+Search uses the public Coveo query endpoint configured by LCBO's website. Product prices and inventory are parsed from server-rendered LCBO pages; distances use coordinates from store-detail pages. There is no dependency on the older `lcboapi.com` service.
+
+- **Inventory coverage is limited to rows LCBO serves.** An absent store does not prove it has no stock.
+- **Prices and quantities can change.** Confirm on LCBO before travelling or purchasing.
+- **Website changes can break the adapter.** It is not an official or guaranteed LCBO API.
+- `stores` returns the first directory page; `discover` filters homepage features, not the catalog.
+- No checkout, purchases, account actions, or anti-bot bypass.
+
+The repository includes a reviewed HTTP-client HAR fixture—not a browser capture or official API specification. [Capture and provenance](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/captures.md) explains recording, offline replay, and redaction limits.
+
+## Contributing
+
+Bug reports and focused improvements are welcome. Start with the [development guide](https://github.com/mariomeyer/lcbo-cli/blob/main/CONTRIBUTING.md).
+
+```sh
+git clone https://github.com/mariomeyer/lcbo-cli.git
+cd lcbo-cli
+uv sync --locked --extra dev
 uv run pytest
 uv build
 ```
 
-Builds produce a wheel and source distribution under `dist/`. See [CONTRIBUTING.md](https://github.com/mariomeyer/lcbo-cli/blob/main/CONTRIBUTING.md) for architecture and maintenance notes. Website markup and third-party services can change; the API is intended for local use and has no authentication. Purchasing, checkout, account actions, and anti-bot bypass are outside the project's scope.
+Tests run offline. CI tests Python 3.11–3.14, validates the distributions, and smoke-tests the installed wheel. Conventional Commits drive automatic versioning and releases; **documentation-only pushes run CI but do not publish to PyPI**.
 
-Tests use the real sanitized search capture, observed product/inventory fragments, and mock HTTP for invalid URLs, mutation replay rejection, redirects, duplicate inventory rows, parsing failures and distance ranking. Live public search returned 20 Guinness results; Guinness 0 SKU 33989 was CAD 11.95. Live availability returned store quantities successfully. No purchasing, checkout, account actions, or anti-bot bypass is implemented.
+[Open an issue](https://github.com/mariomeyer/lcbo-cli/issues/new) with a sanitized command, package version, and expected versus actual behavior. Remove personal locations, cookies, tokens, and other sensitive data from logs or captures before sharing them.
 
-Full proximity ranking was also verified live for SKU 33989: **263 of 263 observed inventory stores** were ranked from the public King West & Victoria store coordinates in Kitchener. The closest results were King West & Victoria (0 km), Highland & Westmount (1.86 km), and Victoria & Edna (1.95 km). Geocoding is covered by mock tests for default Photon lookup, Canadian filtering, coordinate order, caching, empty matches, and custom-provider overrides.
+## Documentation
+
+| Guide | What you'll find |
+| --- | --- |
+| [Reference](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/reference.md) | Every command, model, environment variable, and HTTP route |
+| [Development](https://github.com/mariomeyer/lcbo-cli/blob/main/CONTRIBUTING.md) | Setup, architecture, testing, and privacy rules |
+| [Captures](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/captures.md) | HAR recording, provenance, and offline replay |
+| [Releases](https://github.com/mariomeyer/lcbo-cli/blob/main/docs/releases.md) | Version conventions, publishing, and recovery |
+
+## License
+
+[MIT](https://github.com/mariomeyer/lcbo-cli/blob/main/LICENSE) for the project code. LCBO data, trademarks, and third-party content remain subject to their respective terms.

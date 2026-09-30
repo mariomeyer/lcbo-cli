@@ -3,7 +3,7 @@
 ## Setup and checks
 
 ```sh
-uv sync --extra dev
+uv sync --locked --extra dev
 uv run pytest
 uv build
 ```
@@ -39,7 +39,13 @@ Never copy a user's city, postal code, address, coordinates, or request history 
 
 ## Distribution
 
-The project runs directly from Git:
+The stable release is published on PyPI as `lcbo`:
+
+```sh
+uvx lcbo --help
+```
+
+For the latest unreleased changes, run directly from Git:
 
 ```sh
 uvx --from git+https://github.com/mariomeyer/lcbo-cli lcbo --help
@@ -49,4 +55,12 @@ uvx --from git+https://github.com/mariomeyer/lcbo-cli lcbo --help
 
 Use Conventional Commits: `fix:` for patch releases, `feat:` for minor releases, and `!` or a `BREAKING CHANGE:` footer for breaking changes. Docs, tests, CI, and maintenance commits do not release on their own. Before 1.0, breaking changes bump the minor version; after 1.0 they bump the major version. Do not manually change the package version or release tags.
 
-CI runs offline tests and distribution checks on pull requests and main pushes. After one-time configuration, qualifying main commits automatically create a version commit, changelog, tag and GitHub release, followed by a separate PyPI publishing job. Publishing is initially disabled with the `RELEASE_ENABLED` repository-variable gate. See [Release setup and recovery](docs/releases.md).
+CI runs offline tests and distribution checks on pull requests and main pushes. Qualifying main commits automatically create a version commit, changelog, tag and GitHub release, followed by a separate PyPI publishing job. A path-based guard excludes documentation-only pushes, regardless of commit message. Markdown/reStructuredText/AsciiDoc files, `docs/`, and the README image generator count as documentation. A mixed push containing source changes remains eligible; a manual workflow run is an explicit release request and still uses Conventional Commit versioning. See [Release setup and recovery](docs/releases.md).
+
+## README images
+
+```sh
+uv run python scripts/readme_screenshots.py
+```
+
+This regenerates the SVG images in `docs/images/` from actual CLI output using public product examples. It makes live LCBO requests but does not geocode a location. Review generated assets for private data before sharing. Screenshot prices are snapshots, not live quotes.

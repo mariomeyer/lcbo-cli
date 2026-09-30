@@ -2,13 +2,15 @@
 
 ## CLI
 
-Run directly from GitHub:
+Run the published package without a checkout:
 
 ```sh
-uvx --from git+https://github.com/mariomeyer/lcbo-cli lcbo --help
+uvx lcbo --help
 ```
 
-Use `lcbo` below as shorthand for that prefix, or `uv run lcbo` in a checkout. Tables are the default. Handled errors go to stderr and return exit code `1`; argument parsing errors return `2`.
+Use `lcbo` below after `uv tool install lcbo`, replace it with `uvx lcbo` for one-off commands, or use `uv run lcbo` in a checkout. The PyPI distribution is `lcbo`; the import is `lcbo_cli`. Tables are the default. Handled errors go to stderr and return exit code `1`; argument parsing errors return `2`.
+
+To run the unreleased GitHub version instead: `uvx --from git+https://github.com/mariomeyer/lcbo-cli lcbo --help`.
 
 | Command | Parameters and behavior |
 | --- | --- |
